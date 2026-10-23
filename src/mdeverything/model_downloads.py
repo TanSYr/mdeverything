@@ -40,7 +40,6 @@ class ModelDownloads:
                 raise ValueError("Another model is downloading. Wait for it to finish or cancel it first.")
             process = subprocess.Popen(
                 worker_command("download-model", name),
-                stdin=subprocess.DEVNULL,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 env={**os.environ, "PYTHONIOENCODING": "utf-8"},
