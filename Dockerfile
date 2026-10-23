@@ -10,7 +10,7 @@ RUN pip install --no-cache-dir ".[transcribe]" \
     && useradd --create-home --uid 10001 mde \
     && mkdir -p /data /models && chown -R mde:mde /data /models
 USER mde
-ENV MDE_DATA_DIR=/data HF_HOME=/models
+ENV MDE_DATA_DIR=/data MDE_MODEL_DIR=/models HF_HOME=/models
 EXPOSE 8765
 HEALTHCHECK --interval=30s --timeout=5s CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8765/api/health')" || exit 1
 CMD ["mde", "serve", "--host", "0.0.0.0", "--port", "8765"]

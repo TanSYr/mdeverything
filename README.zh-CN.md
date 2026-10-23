@@ -41,7 +41,7 @@
 
 **[下载桌面安装包 →](https://github.com/TanSYr/mdeverything/releases/tag/v0.2.0)**
 
-1. macOS 选择适合 **Apple Silicon（arm64）** 或 **Intel（x64）** 的 `.dmg`，Windows 选择 **x64 `.exe`**。
+1. macOS 14 及以上选择适合 **Apple Silicon（arm64）** 或 **Intel（x64）** 的 `.dmg`，Windows 选择 **x64 `.exe`**。
 2. 安装后打开 mdeverything，先点「体验演示」，或直接粘贴链接、拖入录音。
 3. 需要语音识别时，应用会自动下载所选模型。也可以进入「设置 → 语音模型」提前下载，查看进度、取消、继续下载。模型准备好后，本地录音可离线转录。
 

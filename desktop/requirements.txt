@@ -1,2 +1,18 @@
-# Build-time dependencies only. The final application does not require Python.
+# Tested desktop build inputs. General source installation remains in pyproject.toml.
 pyinstaller==6.22.3
+fastapi==0.161.1
+uvicorn==0.54.0
+python-multipart==0.0.32
+httpx[socks]==0.28.1
+filelock==4.2.4
+faster-whisper==1.2.1
+ctranslate2==4.8.3
+av==18.1.0
+onnxruntime==1.23.2 ; sys_platform == 'darwin' and platform_machine == 'x86_64'
+onnxruntime==1.31.0 ; sys_platform != 'darwin' or platform_machine != 'x86_64'
+yt-dlp[default]==2026.10.21
+yt-dlp-ejs==0.8.0
+huggingface-hub==2.2.0
+tokenizers==0.23.3
+numpy==2.4.6
+socksio==1.0.0

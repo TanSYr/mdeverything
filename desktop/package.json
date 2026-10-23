@@ -62,7 +62,8 @@
       "identity": null,
       "hardenedRuntime": false,
       "notarize": false,
-      "icon": "icons/icon.icns"
+      "icon": "icons/icon.icns",
+      "minimumSystemVersion": "14.0"
     },
     "win": {
       "target": [

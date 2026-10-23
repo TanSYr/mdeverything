@@ -80,7 +80,7 @@ function loadPreferences() {
 }
 const preferences = loadPreferences();
 const state = { locale: preferences.locale === "zh" ? "zh" : "en", mode: "url", files: [], jobs: [], selected: null,
-  document: null, documentId: null, raw: false, submitting: false, health: null, models: [], fetchingModels: false, preferencesLoaded: false, preferencesLoading: false, preferenceRevision: 0, modelSignature: "", connected: false, fetchingJobs: false, readerRequest: 0, jobsRevision: 0 };
+  document: null, documentId: null, raw: false, submitting: false, health: null, models: [], fetchingModels: false, preferencesLoaded: false, preferencesLoading: false, preferenceRevision: 0, preferenceBaseline: 0, modelSignature: "", connected: false, fetchingJobs: false, readerRequest: 0, jobsRevision: 0 };
 const initialEmptyReader = $("reader-content").firstElementChild.cloneNode(true);
 let toastTimer;
 let preferenceWrites = Promise.resolve();
@@ -192,7 +192,7 @@ async function refreshHealth() {
     state.health = await api("/api/health"); state.connected = true;
     if (state.health.desktop && !state.preferencesLoaded && !state.preferencesLoading) {
       state.preferencesLoading = true;
-      const revision = state.preferenceRevision;
+      const revision = state.preferenceBaseline;
       try {
         const saved = await api("/api/preferences");
         if (revision === state.preferenceRevision) {
@@ -532,6 +532,7 @@ if (preferences.model && Array.from($("model").options).some((item) => item.valu
 $("notes").checked = preferences.notes === true;
 if (!/Mac|iPhone|iPad/.test(navigator.platform)) { $("shortcut-hint").textContent = "Ctrl Enter"; document.querySelector(".new-button kbd").textContent = "Ctrl ↵"; }
 setMode("url"); setLocale(state.locale);
+state.preferenceBaseline = state.preferenceRevision;
 refreshHealth(); refreshJobs(); refreshModels();
 setInterval(() => { if (!document.hidden) refreshJobs(); }, 2500);
 setInterval(() => { if (!document.hidden) refreshHealth(); }, 30000);

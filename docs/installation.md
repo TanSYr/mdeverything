@@ -2,7 +2,7 @@
 
 ## Desktop installers
 
-Download from the [v0.2.0 desktop preview release](https://github.com/TanSYr/mdeverything/releases/tag/v0.2.0). Select macOS arm64 for Apple Silicon, macOS x64 for Intel, or Windows x64. Linux can use the source or Docker edition. Windows ARM is not a native target in this release.
+Download from the [v0.2.0 desktop preview release](https://github.com/TanSYr/mdeverything/releases/tag/v0.2.0). Requires macOS 14 or later, or Windows 10/11 x64. Select macOS arm64 for Apple Silicon, macOS x64 for Intel, or Windows x64. Linux can use the source or Docker edition. Windows ARM is not a native target in this release.
 
 - **macOS:** open the `.dmg`, drag mdeverything to Applications, then open it. These preview packages are not signed with an Apple Developer ID or notarized. macOS may require approval in **System Settings → Privacy & Security → Open Anyway** after the first launch attempt. Only approve the release you intentionally downloaded and checked. No command to disable Gatekeeper is needed or recommended.
 - **Windows:** run the `.exe` installer. This unsigned preview can trigger SmartScreen's unknown-publisher prompt. Confirm the downloaded file and its checksum before using **More info → Run anyway**, if offered by your system. Managed computers may require administrator approval.

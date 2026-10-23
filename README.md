@@ -42,7 +42,7 @@ A useful idea should not stay trapped in a timeline. Paste a video link or drop 
 
 **[Download the desktop app →](https://github.com/TanSYr/mdeverything/releases/tag/v0.2.0)**
 
-1. Choose the macOS `.dmg` for **Apple Silicon (arm64)** or **Intel (x64)**, or the Windows **x64 `.exe`**.
+1. Choose the macOS 14+ `.dmg` for **Apple Silicon (arm64)** or **Intel (x64)**, or the Windows **x64 `.exe`**.
 2. Install and open mdeverything. Click **Try demo**, paste a video link, or drop a recording.
 3. When speech recognition is needed, the app downloads your selected model automatically. **Settings → Speech models** also lets you prepare one in advance, see progress, cancel and resume. Then local recordings work offline.
 

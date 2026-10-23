@@ -112,6 +112,9 @@ def main():
             [str(binary / (name + extension)), flag], check=True, capture_output=True, text=True
         )
         print(result.stdout.splitlines()[0])
+    from collect_licenses import collect
+
+    collect(output, cache)
     print("Verified runtime prepared:", output)
 
 

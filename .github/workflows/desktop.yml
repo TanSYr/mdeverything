@@ -72,8 +72,25 @@ jobs:
         run: ${{ matrix.engine }} --self-check
       - name: Frozen demo with no Python on PATH
         run: python scripts/smoke_desktop.py --engine ${{ matrix.engine }} --runtime desktop/runtime
+      - name: Real model download and offline frozen speech
+        run: python scripts/check_desktop_speech.py --engine ${{ matrix.engine }} --runtime desktop/runtime
       - name: Build unsigned desktop installer
         run: npm run dist --prefix desktop -- --${{ matrix.platform }} --${{ matrix.arch }}
+      - name: Install and test Windows application
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $installer = (Get-ChildItem desktop/release/*.exe | Select-Object -First 1).FullName
+          $destination = Join-Path $env:RUNNER_TEMP 'mde-installed'
+          $installed = Start-Process -FilePath $installer -ArgumentList @('/S', "/D=$destination") -Wait -PassThru
+          if ($installed.ExitCode -ne 0) { throw "Installer failed: $($installed.ExitCode)" }
+          $engine = Join-Path $destination 'resources/engine/mde-engine.exe'
+          $runtime = Join-Path $destination 'resources/runtime'
+          if (!(Test-Path $engine)) { throw 'Installed engine is missing' }
+          & $engine --self-check
+          if ($LASTEXITCODE -ne 0) { throw 'Installed native dependencies failed' }
+          python scripts/smoke_desktop.py --engine $engine --runtime $runtime
+          if ($LASTEXITCODE -ne 0) { throw 'Installed application engine failed' }
       - name: Upload installers for review
         uses: actions/upload-artifact@v4
         with:

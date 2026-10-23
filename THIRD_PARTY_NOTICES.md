@@ -15,3 +15,9 @@ The author's earlier local Video2Text project informed the download → transcri
 The demo transcript is original, contains no third-party video transcript, and is included under this repository's MIT license. Screenshots demonstrate that bundled text through the real conversion pipeline.
 
 Desktop packages additionally include Electron (MIT and bundled Chromium/third-party notices), Node.js (MIT and its bundled third-party licenses), and a frozen Python runtime (PSF license). The packaging script retains dependency license files and runtime notices. See `desktop/engine.spec`, `desktop/package-lock.json` and `desktop/runtime-manifest.json` for provenance. Speech model weights are downloaded separately from the SYSTRAN faster-whisper repositories, whose model cards declare MIT licensing; exact revisions and hashes are pinned in `src/mdeverything/data/speech-models.json`.
+
+## Two separate FFmpeg distributions in the desktop package
+
+The command-line FFmpeg/ffprobe runtime is built from unmodified official FFmpeg 7.1.1 sources with GPL, nonfree and version3 options disabled. Its source archive, LGPL2.1 license and build recipe are included.
+
+PyAV wheels separately vendor FFmpeg and codec libraries for Python audio decoding. These are not the same build as `runtime/bin/ffmpeg`; they carry their own LGPL/GPL and other component licenses. The PyAV vendor build can include x264/x265, and its FFmpeg runtime license string does not replace those component licenses. Desktop packaging includes the matching vendor build recipes/patches, pinned source archives and license texts. Consult the installed third-party materials for exact versions. This project's MIT source license does not remove the obligations of bundled GPL/LGPL components. The complete project source and build scripts are also provided in the matching release source archive.

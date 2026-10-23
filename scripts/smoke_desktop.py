@@ -103,6 +103,50 @@ def smoke(command, runtime):
                 process.wait(timeout=10)
 
 
+def speech_smoke(command, runtime, audio, models):
+    """Optional real inference, using an already verified model cache with network disabled."""
+    with tempfile.TemporaryDirectory(prefix="mde-speech-smoke-") as temporary:
+        folder = Path(temporary)
+        request = {"input": str(Path(audio).resolve()), "language": "en", "model": "tiny", "notes": False}
+        (folder / "request.json").write_text(json.dumps(request))
+        env = dict(os.environ)
+        env.update(
+            MDE_MODEL_DIR=str(Path(models).resolve()),
+            HF_HUB_OFFLINE="1",
+            HTTP_PROXY="http://127.0.0.1:1",
+            HTTPS_PROXY="http://127.0.0.1:1",
+            ALL_PROXY="http://127.0.0.1:1",
+            NO_PROXY="",
+            PATH=str(runtime / "bin"),
+            PYTHONIOENCODING="utf-8",
+        )
+        result = subprocess.run(
+            [*command, "--worker", str(folder)],
+            env=env,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=180,
+        )
+        assert result.returncode == 0, result.stdout + result.stderr
+        document = json.loads((folder / "document.json").read_text())
+        assert document["method"] == "whisper" and document["segments"], document
+        if os.environ.get("MDE_SMOKE_EXPECT"):
+            assert (
+                os.environ["MDE_SMOKE_EXPECT"].lower()
+                in " ".join(segment["text"] for segment in document["segments"]).lower()
+            ), document
+        print(
+            json.dumps(
+                {
+                    "speech": "passed",
+                    "offline": True,
+                    "transcript": " ".join(segment["text"] for segment in document["segments"]),
+                }
+            )
+        )
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--engine", type=Path)
@@ -112,3 +156,11 @@ if __name__ == "__main__":
         [str(args.engine.resolve())] if args.engine else [sys.executable, "-m", "mdeverything.desktop"],
         args.runtime.resolve(),
     )
+
+    if os.environ.get("MDE_SMOKE_AUDIO"):
+        speech_smoke(
+            [str(args.engine.resolve())] if args.engine else [sys.executable, "-m", "mdeverything.desktop"],
+            args.runtime.resolve(),
+            os.environ["MDE_SMOKE_AUDIO"],
+            os.environ["MDE_SMOKE_MODELS"],
+        )

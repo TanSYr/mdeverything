@@ -165,7 +165,21 @@ class JobManager:
             if os.name == "posix":
                 os.killpg(process.pid, signal.SIGTERM)
             else:
-                process.terminate()
+                # terminate() only stops Python; taskkill also stops its FFmpeg/Node children.
+                taskkill = os.path.join(
+                    os.environ.get("SystemRoot", r"C:\Windows"), "System32", "taskkill.exe"
+                )
+                try:
+                    subprocess.run(
+                        [taskkill, "/PID", str(process.pid), "/T", "/F"],
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        creationflags=subprocess.CREATE_NO_WINDOW,
+                        timeout=5,
+                        check=False,
+                    )
+                except (OSError, subprocess.TimeoutExpired):
+                    process.terminate()
         except ProcessLookupError:
             return
         try:

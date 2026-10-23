@@ -10,12 +10,14 @@ Use the target OS and architecture; PyInstaller is not a cross-compiler. Use Pyt
 python -m pip install -e '.[dev,transcribe]' -r desktop/requirements.txt
 python scripts/prepare_runtime.py
 python scripts/build_engine.py
-python scripts/smoke_desktop.py
+python scripts/smoke_desktop.py --engine desktop/engine/mde-engine/mde-engine --runtime desktop/runtime
 cd desktop
 npm ci
 npm test
 npm run dist
 ```
+
+On Windows, use `desktop/engine/mde-engine/mde-engine.exe` for `--engine`.
 
 See `.github/workflows/desktop.yml` for the authoritative platform prerequisites and exact commands, including the native FFmpeg compiler toolchain. Generated engines/runtime/build folders are ignored by Git. Installer outputs are in `desktop/release/`. Runtime downloads and sources are pinned and verified; models are not inside an installer. Keep dependency licenses and the included FFmpeg source/build recipe when redistributing.
 
