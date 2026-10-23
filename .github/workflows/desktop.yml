@@ -33,6 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
+        id: python
         with:
           python-version: '3.11'
           architecture: ${{ matrix.arch }}
@@ -59,13 +60,25 @@ jobs:
             make
             diffutils
             mingw-w64-x86_64-gcc
+      - name: Restore verified runtime cache
+        id: runtime-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: desktop/runtime
+          key: runtime-${{ runner.os }}-${{ matrix.arch }}-${{ steps.python.outputs.python-version }}-${{ hashFiles('desktop/runtime-manifest.json', 'desktop/vendor-sources.json', 'desktop/requirements.txt', 'scripts/prepare_runtime.py', 'scripts/build_ffmpeg.sh', 'scripts/collect_licenses.py', 'THIRD_PARTY_NOTICES.md') }}
       - name: Build LGPL runtime on macOS
-        if: runner.os == 'macOS'
+        if: runner.os == 'macOS' && steps.runtime-cache.outputs.cache-hit != 'true'
         run: python scripts/prepare_runtime.py
       - name: Build LGPL runtime on Windows
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && steps.runtime-cache.outputs.cache-hit != 'true'
         shell: msys2 {0}
         run: python scripts/prepare_runtime.py
+      - name: Save verified runtime cache
+        if: steps.runtime-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: desktop/runtime
+          key: ${{ steps.runtime-cache.outputs.cache-primary-key }}
       - name: Freeze the local engine
         run: python scripts/build_engine.py
       - name: Check frozen native dependencies
@@ -106,5 +119,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: desktop-diagnostics-${{ matrix.platform }}-${{ matrix.arch }}
-          path: desktop/.build/pyinstaller/mde-engine/warn-mde-engine.txt
+          path: desktop/.build/pyinstaller/engine/warn-engine.txt
           if-no-files-found: ignore

@@ -108,7 +108,18 @@ def test_same_size_corruption_can_be_repaired(model):
     with client_for(lambda request: httpx.Response(200, content=data)) as client:
         path = sm.ensure_model("tiny", client=client)
         (path / "model.bin").write_bytes(b"x" * len(data))
-        assert sm.model_status("tiny")["status"] == "error"
         sm.ensure_model("tiny", client=client)
     assert (path / "model.bin").read_bytes() == data
     assert sm.model_status("tiny")["status"] == "ready"
+
+
+def test_cached_model_is_verified_even_with_unchanged_stat(model, monkeypatch):
+    data, _ = model
+    with client_for(lambda request: httpx.Response(200, content=data)) as client:
+        path = sm.ensure_model("tiny", client=client)
+        fingerprint = sm._fingerprint(path / "model.bin")
+        (path / "model.bin").write_bytes(b"z" * len(data))
+        monkeypatch.setattr(sm, "_fingerprint", lambda path: fingerprint)
+        assert sm._ready("tiny")  # Simulate a filesystem with unchanged timestamp metadata.
+        sm.ensure_model("tiny", client=client)
+    assert (path / "model.bin").read_bytes() == data

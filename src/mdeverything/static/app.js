@@ -130,7 +130,7 @@ function statusText(job) { return t(job.status === "done" ? "completed" : job.st
 function stageText(job) {
   const chineseStages = {
     "Waiting in queue": "等待处理", "Starting conversion": "开始转换", "Ready to read": "文档已就绪", "Failed": "转换失败", "Cancelled": "转换已取消", "Interrupted": "转换意外中断",
-    "Loading local speech model": "加载本地语音模型", "Waiting for speech model download": "等待语音模型下载",
+    "Loading local speech model": "加载本地语音模型", "Verifying cached speech model": "校验已下载的语音模型", "Waiting for speech model download": "等待语音模型下载",
     "Loading local speech model (first use may download weights)": "加载本地语音模型（首次使用可能需要下载）",
     "Transcribing on your device": "正在本地转录音频", "Reading source and looking for captions": "检查素材与可用字幕",
     "Using existing captions — no speech model needed": "使用已有字幕，无需语音模型", "Downloading audio for local transcription": "下载音频以进行本地转录",

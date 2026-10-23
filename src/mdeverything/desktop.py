@@ -8,6 +8,16 @@ import sys
 import threading
 
 
+def diagnostic(stage):
+    if os.environ.get("MDE_DEBUG_DESKTOP"):
+        print(
+            "desktop-debug "
+            + json.dumps({"stage": stage, "pid": os.getpid(), "parent": os.getppid(), "args": sys.argv[1:]}),
+            file=sys.stderr,
+            flush=True,
+        )
+
+
 def self_check():
     """Import native dependencies and verify packaged speech/JavaScript assets."""
     import importlib.metadata
@@ -89,11 +99,20 @@ def main():
     # PyInstaller multiprocessing children must be intercepted before parsing our flags.
     import multiprocessing
 
+    diagnostic("before-freeze-support")
+    if os.environ.get("MDE_DEBUG_DESKTOP"):
+        import faulthandler
+
+        faulthandler.enable()
+        faulthandler.dump_traceback_later(20, repeat=True)
     multiprocessing.freeze_support()
+    diagnostic("after-freeze-support")
     args = sys.argv[1:]
     if args[:1] == ["--worker"] and len(args) == 2:
+        diagnostic("before-worker-import")
         from mdeverything.worker import main as worker_main
 
+        diagnostic("before-worker-main")
         return worker_main(args[1])
     if args[:1] == ["--download-model"] and len(args) == 2:
         from mdeverything.speech_models import download_main

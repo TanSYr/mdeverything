@@ -40,7 +40,11 @@ const root = path.resolve(__dirname, '..');
     assert.equal(await app.evaluate(({ app }) => app.getName()), 'mdeverything');
     assert.deepEqual(errors, []);
     const screen = process.env.MDE_ELECTRON_SCREENSHOT;
-    if (screen) await page.screenshot({ path: path.resolve(screen), fullPage: true });
+    if (screen) {
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.waitForTimeout(3500);
+      await page.screenshot({ path: path.resolve(screen) });
+    }
     console.log(JSON.stringify({ result: 'passed', sandbox: true, copy: true, export: true,
       nativeSaveOptions: true, origin: new URL(page.url()).origin }));
   } finally {

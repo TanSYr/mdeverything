@@ -70,5 +70,61 @@
   "pyav": {
     "url": "https://files.pythonhosted.org/packages/8d/f4/f22114d30d3435e38c6af2b4870f37b864403dca6ae7af747a289ce0a18e/av-18.1.0.tar.gz",
     "sha256": "47bfc286e1bc9de7ab4681fc2b575cd2460a66919d31ffe1bd5aa54fae531a28"
+  },
+  "libiconv": {
+    "url": "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.19.tar.gz",
+    "sha256": "88dd96a8c0464eca144fc791ae60cd31cd8ee78321e67397e25fc095c4a19aa6"
+  },
+  "gcc-runtime-license": {
+    "url": "https://raw.githubusercontent.com/gcc-mirror/gcc/releases/gcc-16.1.0/COPYING.RUNTIME",
+    "sha256": "9d6b43ce4d8de0c878bf16b54d8e7a10d9bd42b75178153e3af6a815bdc90f74"
+  },
+  "gcc-gpl3-license": {
+    "url": "https://raw.githubusercontent.com/gcc-mirror/gcc/releases/gcc-16.1.0/COPYING3",
+    "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+  },
+  "zlib": {
+    "url": "https://github.com/madler/zlib/releases/download/v1.3.2/zlib-1.3.2.tar.xz",
+    "sha256": "d7a0654783a4da529d1bb793b7ad9c3318020af77667bcae35f95d0e42a792f3"
+  },
+  "winpthreads-license": {
+    "url": "https://raw.githubusercontent.com/mingw-w64/mingw-w64/31bd54ab7d5fe03c67ed2bb1a57e531b9c7f8cc4/mingw-w64-libraries/winpthreads/COPYING",
+    "sha256": "63263614cdd29f2f93cba85e992f041b31f9fc7b4033692f31269489a8a1b177",
+    "kind": "text"
+  },
+  "msys2-libiconv-0002-fix-cr-for-awk-in-configure.all.patch": {
+    "url": "https://raw.githubusercontent.com/msys2/MINGW-packages/045d46aedb9fdbd93b0900b1e20c1a6c73f23072/mingw-w64-libiconv/0002-fix-cr-for-awk-in-configure.all.patch",
+    "sha256": "89d5c0f666e50a0186cfb142ba7b77e8fe1ac4d65bdfd9ae14ae8d2f0045a87c",
+    "kind": "text"
+  },
+  "msys2-libiconv-0003-add-cp65001-as-utf8-alias.patch": {
+    "url": "https://raw.githubusercontent.com/msys2/MINGW-packages/045d46aedb9fdbd93b0900b1e20c1a6c73f23072/mingw-w64-libiconv/0003-add-cp65001-as-utf8-alias.patch",
+    "sha256": "cb2b1cca44c9b9bd11c3bd33997c10d22dff263542275324c88f34b59910ef87",
+    "kind": "text"
+  },
+  "msys2-libiconv-PKGBUILD": {
+    "url": "https://raw.githubusercontent.com/msys2/MINGW-packages/045d46aedb9fdbd93b0900b1e20c1a6c73f23072/mingw-w64-libiconv/PKGBUILD",
+    "sha256": "9b3212d06910560fb59e017e0b73a29d392a5082d3a47a613e61509bd7dcd475",
+    "kind": "text"
+  },
+  "msys2-libiconv-fix-pointer-buf.patch": {
+    "url": "https://raw.githubusercontent.com/msys2/MINGW-packages/045d46aedb9fdbd93b0900b1e20c1a6c73f23072/mingw-w64-libiconv/fix-pointer-buf.patch",
+    "sha256": "6b6e2393840f4dc6067587165777b1a07978f4c05247d7c1010a45ad251bbeeb",
+    "kind": "text"
+  },
+  "msys2-libiconv-iconv.pc": {
+    "url": "https://raw.githubusercontent.com/msys2/MINGW-packages/045d46aedb9fdbd93b0900b1e20c1a6c73f23072/mingw-w64-libiconv/iconv.pc",
+    "sha256": "56e7ec406bf42eb66b1d972f20d229f7a76ba00c38c7b4403bf348875704baae",
+    "kind": "text"
+  },
+  "msys2-winpthreads-0001-Define-__-de-register_frame_info-in-fake-libgcc_s.patch": {
+    "url": "https://raw.githubusercontent.com/msys2/MINGW-packages/4f0fb09a6ee2bbd2203a0720f2d54cc6b6a5d8f4/mingw-w64-winpthreads/0001-Define-__-de-register_frame_info-in-fake-libgcc_s.patch",
+    "sha256": "2e779bcc60a1422b23e0cfdb5c0f6851f2382592bb4675d08a6bdef78d5e5c10",
+    "kind": "text"
+  },
+  "msys2-winpthreads-PKGBUILD": {
+    "url": "https://raw.githubusercontent.com/msys2/MINGW-packages/4f0fb09a6ee2bbd2203a0720f2d54cc6b6a5d8f4/mingw-w64-winpthreads/PKGBUILD",
+    "sha256": "597bb6c4bb5baef578d02e957d3e15a0b4ea087cba6963e06b4a545ae4d899d0",
+    "kind": "text"
   }
 }

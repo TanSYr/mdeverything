@@ -17,6 +17,10 @@ def worker_command(mode: str, *args: str | Path) -> list[str]:
 
 
 def child_process_options() -> dict:
+    # Desktop stdin is the parent-lifetime pipe and has an outstanding read. Inheriting
+    # it can deadlock Windows CRT startup (GetFileType waits for that synchronous IO).
+    # Disposable workers receive input only through argv/files, never this pipe.
+    options = {"stdin": subprocess.DEVNULL}
     if os.name == "nt":
-        return {"creationflags": subprocess.CREATE_NO_WINDOW}
-    return {"start_new_session": True}
+        return {**options, "creationflags": subprocess.CREATE_NO_WINDOW}
+    return {**options, "start_new_session": True}

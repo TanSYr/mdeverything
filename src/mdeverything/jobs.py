@@ -6,6 +6,7 @@ import shutil
 import signal
 import sqlite3
 import subprocess
+import sys
 import threading
 import uuid
 from datetime import UTC, datetime
@@ -244,9 +245,17 @@ class JobManager:
                 **child_process_options(),
             )
             process = self.process
+            if os.environ.get("MDE_DEBUG_DESKTOP"):
+                print(
+                    f"desktop-debug worker-spawned pid={process.pid} job={job_id}",
+                    file=sys.stderr,
+                    flush=True,
+                )
         error = None
         for line in process.stdout:
             if not line.startswith("::mde::"):
+                if os.environ.get("MDE_DEBUG_DESKTOP"):
+                    print(line[:2000], file=sys.stderr, end="", flush=True)
                 continue
             try:
                 event = json.loads(line[7:])

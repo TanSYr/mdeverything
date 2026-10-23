@@ -140,13 +140,15 @@ def _fetch(client, url, target, item, report):
 def ensure_model(name, progress=None, *, client=None):
     """Return a complete local model. No network at all when already installed."""
     folder = model_path(name)
-    if _ready(name):
-        return folder
     progress = progress or (lambda stage, percent: None)
     progress("Waiting for speech model download", 30)
     with _lock(name):
         if _ready(name):
-            return folder
+            progress("Verifying cached speech model", 30)
+            # Windows timestamps may not change for rapid same-size writes. Check the
+            # content before inference, while keeping status polling inexpensive.
+            if all(_verify(folder / item["name"], item) for item in CATALOG[name]["files"]):
+                return folder
         folder.mkdir(parents=True, exist_ok=True)
         meta = CATALOG[name]
         completed = 0

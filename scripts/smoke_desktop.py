@@ -26,7 +26,34 @@ def smoke(command, runtime):
             + os.pathsep
             + (str(Path(os.environ["SystemRoot"]) / "System32") if os.name == "nt" else "/usr/bin:/bin"),
             PYTHONIOENCODING="utf-8",
+            MDE_DEBUG_DESKTOP="1",
         )
+        # Isolate frozen dispatch from the API supervisor before testing its lifetime pipe.
+        direct = root / "direct-worker"
+        direct.mkdir()
+        (direct / "input.vtt").write_text("WEBVTT\n\n00:00:00.000 --> 00:00:02.000\nDesktop worker probe.\n")
+        (direct / "request.json").write_text(
+            json.dumps(
+                {"input": str(direct / "input.vtt"), "language": "en", "model": "tiny", "notes": False}
+            )
+        )
+        try:
+            probe = subprocess.run(
+                [*command, "--worker", str(direct)],
+                env=env,
+                stdin=subprocess.DEVNULL,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                timeout=30,
+            )
+        except subprocess.TimeoutExpired as exc:
+            raise AssertionError(
+                f"Direct frozen worker hung. stdout={exc.stdout!r} stderr={exc.stderr!r}"
+            ) from exc
+        assert probe.returncode == 0, probe.stdout + probe.stderr
+        assert (direct / "document.md").is_file(), probe.stdout + probe.stderr
+        print(json.dumps({"direct_worker": "passed", "minimal_path": True}), flush=True)
         process = subprocess.Popen(
             command,
             stdin=subprocess.PIPE,
@@ -80,7 +107,36 @@ def smoke(command, runtime):
                 if state["status"] in ("done", "error", "cancelled"):
                     break
                 time.sleep(0.1)
-            assert state["status"] == "done", state
+            if state["status"] != "done":
+                listing = [str(file.relative_to(root)) for file in root.rglob("*") if file.is_file()]
+                processes = ""
+                if os.name == "nt":
+                    powershell = (
+                        Path(os.environ["SystemRoot"]) / "System32/WindowsPowerShell/v1.0/powershell.exe"
+                    )
+                    snapshot = subprocess.run(
+                        [
+                            str(powershell),
+                            "-NoProfile",
+                            "-Command",
+                            "Get-CimInstance Win32_Process | Where-Object {$_.Name -eq 'mde-engine.exe'} | "
+                            "Select-Object ProcessId,ParentProcessId,CommandLine | ConvertTo-Json",
+                        ],
+                        capture_output=True,
+                        text=True,
+                        timeout=15,
+                    )
+                    processes = snapshot.stdout
+                raise AssertionError(
+                    json.dumps(
+                        {
+                            "job": state,
+                            "files": listing,
+                            "server_debug": "".join(errors)[-12000:],
+                            "processes": processes,
+                        }
+                    )
+                )
             markdown = request(f"/api/jobs/{job['id']}/download?format=md")
             assert b"Transcript" in markdown and b"timestamp" in markdown, markdown[:200]
             assert not list((root / "models").glob("**/model.bin")), "Demo downloaded a speech model"

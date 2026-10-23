@@ -33,3 +33,7 @@ def test_windows_cancellation_terminates_descendants(monkeypatch):
     assert run.call_count == 1
     assert run.call_args.args[0][-4:] == ["/PID", "123", "/T", "/F"]
     assert run.call_args.kwargs["creationflags"] == 0x08000000
+
+
+def test_disposable_children_do_not_inherit_parent_lifetime_pipe():
+    assert runtime.child_process_options()["stdin"] == subprocess.DEVNULL

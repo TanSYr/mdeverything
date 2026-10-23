@@ -5,6 +5,7 @@ import importlib.metadata
 import json
 import platform
 import shutil
+import subprocess
 import tarfile
 import urllib.request
 from pathlib import Path
@@ -22,9 +23,10 @@ def collect(output, cache):
     def vendor(item):
         name, record = item
         content = fetch(record, cache)
-        archive = sources / (name + (".txt" if name.endswith("-license") else ".tar.source"))
+        plain = name.endswith("-license") or record.get("kind") == "text"
+        archive = sources / (name + (".txt" if plain else ".tar.source"))
         archive.write_bytes(content)
-        if not name.endswith("-license"):
+        if not plain:
             with tarfile.open(archive, "r:*") as package:
                 # Extract only regular license/notice text; retain full archives for source/patches.
                 for index, member in enumerate(package.getmembers()):
@@ -50,8 +52,18 @@ def collect(output, cache):
         "The pyav-ffmpeg-build archive contains patches, dependency hashes and build scripts. "
         "Archives keep original tar compression and can be opened with tar -xf. "
         "The native libraries are outside app.asar and may be replaced/relinked. "
+        "Windows wheel inspection identifies libiconv 1.19, zlib 1.3.2 and GCC 16.1.0 (MSYS2 Rev5). "
+        "The MSYS2 winpthreads recipe is the last historical snapshot before the vendor build; "
+        "the exact winpthreads revision is not encoded in the DLL and cannot be byte-proven. "
+        "Its MIT/BSD license text is retained. GCC runtime exception text is also retained. "
         "This is separate from our standalone FFmpeg 7.1.1 LGPL build.\n"
     )
+    # electron-builder does not copy the distribution-root license files into a macOS app.
+    electron = ROOT / "desktop/node_modules/electron"
+    node = output / "bin" / ("node.exe" if platform.system() == "Windows" else "node")
+    subprocess.run([str(node), "-e", "require(process.argv[1])", str(electron)], check=True)
+    for filename in ("LICENSE", "LICENSES.chromium.html"):
+        shutil.copyfile(electron / "dist" / filename, licenses / ("Electron-" + filename))
     packages = licenses / "python-packages"
     packages.mkdir(exist_ok=True)
     copied = []
