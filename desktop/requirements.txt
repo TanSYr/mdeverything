@@ -1,0 +1,2 @@
+# Build-time dependencies only. The final application does not require Python.
+pyinstaller==6.22.3

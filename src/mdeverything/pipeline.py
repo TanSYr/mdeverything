@@ -84,11 +84,11 @@ def _transcribe(path: Path, language: str, model: str, progress):
         raise RuntimeError(
             'Local transcription is not installed. From the repository run: pip install -e ".[transcribe]".'
         ) from exc
-    progress("Loading local speech model (first use may download weights)", 30)
-    try:
-        engine = WhisperModel(model, device="cpu", compute_type="int8", local_files_only=True)
-    except (FileNotFoundError, OSError):
-        engine = WhisperModel(model, device="cpu", compute_type="int8")
+    from .speech_models import ensure_model
+
+    model_directory = ensure_model(model, progress)
+    progress("Loading local speech model", 35)
+    engine = WhisperModel(str(model_directory), device="cpu", compute_type="int8", local_files_only=True)
     raw, info = engine.transcribe(
         str(path), language=None if language == "auto" else language, vad_filter=True
     )

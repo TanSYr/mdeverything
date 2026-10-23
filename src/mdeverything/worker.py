@@ -12,8 +12,8 @@ def emit(**data):
     print("::mde::" + json.dumps(data, ensure_ascii=False), flush=True)
 
 
-def main():
-    directory = Path(sys.argv[1])
+def main(directory=None):
+    directory = Path(directory if directory is not None else sys.argv[1])
     request = json.loads((directory / "request.json").read_text(encoding="utf-8"))
     try:
         doc = convert(

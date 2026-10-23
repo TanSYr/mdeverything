@@ -14,3 +14,10 @@ data/
 *.sqlite*
 cookies*.txt
 .DS_Store
+
+# Generated desktop toolchains, runtimes and installers
+node_modules/
+desktop/.build/
+desktop/engine/
+desktop/runtime/
+desktop/release/

@@ -14,9 +14,17 @@ A useful release beats a broad promise. Dates are intentionally not committed be
 - Optional local Ollama notes
 - Source Docker configuration, source/wheel distribution, CI matrix
 
+## Shipped in 0.2 desktop preview
+
+- macOS Apple Silicon/Intel and Windows x64 packaging with embedded Python, Whisper engine, FFmpeg and Node
+- Model setup with real download progress, checksum verification, cancellation and resume
+- Automatic model preparation on first transcription; offline recordings after setup
+- Per-session desktop API token, isolated renderer, native export save dialog
+- Persistent preferences, library and models outside the application
+
 ## Next: first-use experience
 
-1. Native desktop packaging with a verifiable dependency/model install experience.
+1. Developer signing/notarization, tested automatic updates and broader real-device installer testing.
 2. Real platform compatibility fixtures, extractor error guidance and more robust rolling-caption handling.
 3. Save an entire playlist into a clean folder of documents, with explicit limits.
 4. Import cookies securely for authenticated content without exposing them to the renderer.

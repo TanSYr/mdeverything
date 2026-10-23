@@ -24,4 +24,13 @@ Data flows from URL/upload → job request → worker → document model → exp
 
 ## Boundaries
 
-No native installer yet; no OCR, diarization, translation or PDF support. No hosted public multi-user service. yt-dlp platform support changes over time; authenticated content may need a user-provided cookies file via CLI. No bundled credentials, signing helpers, browser scraping fallback, telemetry or tracking. Models require an initial download. Docker is provided as a source build, not an already-published registry image.
+Desktop installers wrap the local API in a sandboxed Electron window and bundle a PyInstaller engine plus media runtimes. No OCR, diarization, translation or PDF support. No hosted public multi-user service. yt-dlp platform support changes over time; authenticated content may need a user-provided cookies file via CLI. No bundled credentials, signing helpers, browser scraping fallback, telemetry or tracking. Models require an initial download. Docker is provided as a source build, not an already-published registry image.
+
+
+## Desktop and speech setup (0.2)
+
+Electron owns one engine process and one window. A random loopback port and session token isolate the API; the token is injected by the main process for the exact local origin, not exposed in URLs. Renderer Node access is disabled, context isolation/sandbox are enabled, and external links leave the application. Closing the application closes the engine stdin; its lifespan stops job and model workers. Frozen workers re-enter the same executable with explicit dispatch flags.
+
+`speech_models` installs a fixed catalog of upstream models at pinned commits. Downloads resume into partial files, verify SHA-256 (LFS) or Git blob hashes, then atomically become available. A cross-process file lock prevents simultaneous downloads of the same model. Jobs and optional setup downloads share this cache. No model host is contacted when a complete cached model exists. `model_downloads` supervises the setup subprocess; model setup never imports inference libraries into the web server. The UI distinguishes speech engine installation from downloaded weights. Interrupted downloads retain partial data and can resume.
+
+Desktop preferences are stored through validated local API settings because the loopback port changes between launches. Source-edition browser preferences remain in localStorage. Documents/uploads and models are outside the installed application so upgrades preserve them. Initial desktop packages are unsigned and not notarized; do not describe them as warning-free installation.

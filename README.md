@@ -9,7 +9,7 @@ Links, recordings and subtitles → clean, timestamped Markdown.
 
 [![CI](https://github.com/TanSYr/mdeverything/actions/workflows/ci.yml/badge.svg)](https://github.com/TanSYr/mdeverything/actions/workflows/ci.yml)
 [![MIT License](https://img.shields.io/badge/license-MIT-232323.svg)](LICENSE)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-e76a41.svg)](https://www.python.org/downloads/)
+[![Desktop](https://img.shields.io/badge/desktop-macOS%20%7C%20Windows-e76a41.svg)](https://github.com/TanSYr/mdeverything/releases/tag/v0.2.0)
 
 **English** · [简体中文](README.zh-CN.md)<br>
 [Get started](#get-started) · [Example output](examples/demo.md) · [Roadmap](docs/roadmap.md) · [Contribute](CONTRIBUTING.md)
@@ -22,7 +22,7 @@ A useful idea should not stay trapped in a timeline. Paste a video link or drop 
 
 **No account. No paid API key. Your files stay yours.**
 
-> **Early release · v0.1.0.** A working local web app and CLI. Native desktop installers are on the roadmap. Website compatibility depends on yt-dlp and can change; “everything” is the direction, not a guarantee that every link works.
+> **Desktop preview · v0.2.0.** macOS and Windows installers include the speech engine and runtimes. No Python setup. Initial installers are unsigned; see the [installation guide](docs/installation.md#desktop-installers). Website compatibility depends on yt-dlp and can change; “everything” is the direction, not a guarantee that every link works.
 
 ### See the real workflow
 
@@ -39,6 +39,18 @@ A useful idea should not stay trapped in a timeline. Paste a video link or drop 
 - **Start without a model.** The included original subtitle demo goes through the real conversion pipeline. No API key, account or model download needed to try it.
 
 ## Get started
+
+**[Download the desktop app →](https://github.com/TanSYr/mdeverything/releases/tag/v0.2.0)**
+
+1. Choose the macOS `.dmg` for **Apple Silicon (arm64)** or **Intel (x64)**, or the Windows **x64 `.exe`**.
+2. Install and open mdeverything. Click **Try demo**, paste a video link, or drop a recording.
+3. When speech recognition is needed, the app downloads your selected model automatically. **Settings → Speech models** also lets you prepare one in advance, see progress, cancel and resume. Then local recordings work offline.
+
+The app includes Python, faster-whisper, FFmpeg and Node. You do **not** install those yourself. Model weights download separately: Tiny **75 MiB**, Base **141 MiB**, Small **464 MiB**, Medium **1.43 GiB**, Large v3 **2.88 GiB** (rounded). Captions and the demo need no speech model. AI notes remain an optional separate Ollama feature.
+
+[Installation help and unsigned-app prompts →](docs/installation.md#desktop-installers)
+
+### Run from source (developers)
 
 Python **3.11–3.13** is the recommended runtime range. FFmpeg is recommended for media processing; `.srt`/`.vtt` conversion needs neither FFmpeg nor speech models.
 
@@ -134,7 +146,7 @@ Read the [complete generated example](examples/demo.md). All example text is ori
 
 The [yt-dlp supported-sites list](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md) is the upstream reference, **not a tested compatibility guarantee for this release**. Sites may require authentication or restrict access. Use only content you are authorized to access. DRM-protected content and active live streams are not supported.
 
-**Not shipped yet:** native desktop packages, playlist expansion, speaker diarization, translation, frame OCR, PDF/web-page conversion or hosted multi-user accounts. See the [roadmap](docs/roadmap.md).
+**Not shipped yet:** playlist expansion, speaker diarization, translation, frame OCR, PDF/web-page conversion or hosted multi-user accounts. See the [roadmap](docs/roadmap.md).
 
 ## Optional: local AI notes
 
@@ -150,7 +162,7 @@ Enable **Local AI notes** in the workspace. `MDE_OLLAMA_URL` defaults to `http:/
 
 ## Local by design
 
-There is no analytics or telemetry. Jobs and uploads live in `~/.mdeverything` by default (change with `--data-dir` or `MDE_DATA_DIR`). Deleting a job removes its saved inputs and outputs. Website requests go to the source platform; model downloads go to the model host. Local recordings are processed on your machine. See [security and deployment boundaries](SECURITY.md).
+There is no analytics or telemetry. Desktop jobs and models live in the OS application data directory; source-edition jobs and uploads live in `~/.mdeverything` by default (change with `--data-dir` or `MDE_DATA_DIR`). Deleting a job removes its saved inputs and outputs. Website requests go to the source platform; model downloads go to the model host. Local recordings are processed on your machine. See [security and deployment boundaries](SECURITY.md).
 
 ## Build with us
 

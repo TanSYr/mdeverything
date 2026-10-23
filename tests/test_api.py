@@ -93,3 +93,40 @@ def test_restart_preserves_done_documents(tmp_path):
     with TestClient(create_app(tmp_path), base_url="http://localhost") as two:
         assert two.get("/api/jobs").json()["jobs"][0]["status"] == "done"
         assert two.get(f"/api/jobs/{job['id']}/document").status_code == 200
+
+
+def test_desktop_token_protects_pages_and_read_endpoints(tmp_path, monkeypatch):
+    monkeypatch.setenv("MDE_DESKTOP_TOKEN", "test-session-secret")
+    with TestClient(create_app(tmp_path), base_url="http://localhost") as client:
+        for path in ("/", "/static/app.js", "/api/health", "/api/jobs", "/api/models"):
+            assert client.get(path).status_code == 403
+            assert client.get(path, headers={"X-MDE-Token": "wrong"}).status_code == 403
+            assert client.get(path, headers={"X-MDE-Token": "test-session-secret"}).status_code == 200
+        # A token does not bypass existing origin/custom-header protections.
+        assert client.post("/api/demo", headers={"X-MDE-Token": "test-session-secret"}).status_code == 403
+        assert (
+            client.post(
+                "/api/demo",
+                headers={**HEADERS, "X-MDE-Token": "test-session-secret", "Origin": "https://evil.example"},
+            ).status_code
+            == 403
+        )
+
+
+def test_model_catalog_is_offline_and_rejects_unknown_models(client):
+    result = client.get("/api/models")
+    assert result.status_code == 200
+    names = {m["name"] for m in result.json()["models"]}
+    assert names == {"tiny", "base", "small", "medium", "large-v3"}
+    assert client.post("/api/models/no-such-model/cancel", headers=HEADERS).status_code == 409
+    assert client.post("/api/models/tiny/download").status_code == 403
+
+
+def test_preferences_persist_across_app_instances_and_validate(tmp_path):
+    with TestClient(create_app(tmp_path), base_url="http://localhost") as client:
+        assert client.put("/api/preferences", json={"locale": "zh"}).status_code == 403
+        values = {"locale": "zh", "model": "tiny", "language": "zh", "notes": True}
+        assert client.put("/api/preferences", headers=HEADERS, json=values).json() == values
+        assert client.put("/api/preferences", headers=HEADERS, json={"model": "../escape"}).status_code == 422
+    with TestClient(create_app(tmp_path), base_url="http://localhost") as client:
+        assert client.get("/api/preferences").json() == values

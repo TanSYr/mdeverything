@@ -1,0 +1,93 @@
+name: Desktop installers
+on:
+  workflow_dispatch:
+  push:
+    branches: ['codex/desktop-app']
+    tags: ['v*']
+permissions:
+  contents: read
+jobs:
+  desktop:
+    name: ${{ matrix.platform }} ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            platform: mac
+            arch: arm64
+            engine: desktop/engine/mde-engine/mde-engine
+          - runner: macos-15-intel
+            platform: mac
+            arch: x64
+            engine: desktop/engine/mde-engine/mde-engine
+          - runner: windows-2022
+            platform: win
+            arch: x64
+            engine: desktop/engine/mde-engine/mde-engine.exe
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      PYTHONUTF8: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          architecture: ${{ matrix.arch }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - name: Install build dependencies
+        run: python -m pip install -e ".[transcribe,dev]" -r desktop/requirements.txt
+      - name: Check Python application
+        run: python -m pytest
+      - name: Install desktop builder
+        run: npm ci --prefix desktop --no-audit --no-fund
+      - name: Check shell security rules
+        run: npm test --prefix desktop
+      - name: Install native Windows FFmpeg toolchain
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          path-type: inherit
+          install: >-
+            make
+            diffutils
+            mingw-w64-x86_64-gcc
+      - name: Build LGPL runtime on macOS
+        if: runner.os == 'macOS'
+        run: python scripts/prepare_runtime.py
+      - name: Build LGPL runtime on Windows
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: python scripts/prepare_runtime.py
+      - name: Freeze the local engine
+        run: python scripts/build_engine.py
+      - name: Check frozen native dependencies
+        run: ${{ matrix.engine }} --self-check
+      - name: Frozen demo with no Python on PATH
+        run: python scripts/smoke_desktop.py --engine ${{ matrix.engine }} --runtime desktop/runtime
+      - name: Build unsigned desktop installer
+        run: npm run dist --prefix desktop -- --${{ matrix.platform }} --${{ matrix.arch }}
+      - name: Upload installers for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: mdeverything-${{ matrix.platform }}-${{ matrix.arch }}
+          path: |
+            desktop/release/*.dmg
+            desktop/release/*.exe
+            desktop/release/*.blockmap
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-diagnostics-${{ matrix.platform }}-${{ matrix.arch }}
+          path: desktop/.build/pyinstaller/mde-engine/warn-mde-engine.txt
+          if-no-files-found: ignore

@@ -60,5 +60,7 @@ jobs:
             sleep 1
           done
           python tests/browser_smoke.py
+          python tests/browser_models.py
+          python tests/browser_preferences.py
       - if: failure()
         run: cat /tmp/mde-ui.log || true

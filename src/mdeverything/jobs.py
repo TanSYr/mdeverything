@@ -6,11 +6,12 @@ import shutil
 import signal
 import sqlite3
 import subprocess
-import sys
 import threading
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
+
+from .runtime import child_process_options, worker_command
 
 TERMINAL = {"done", "error", "cancelled"}
 
@@ -219,14 +220,14 @@ class JobManager:
                 "PYTHONIOENCODING": "utf-8",
             }
             self.process = subprocess.Popen(
-                [sys.executable, "-u", "-m", "mdeverything.worker", str(folder)],
+                worker_command("worker", folder),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
                 encoding="utf-8",
                 errors="replace",
                 env=env,
-                start_new_session=os.name == "posix",
+                **child_process_options(),
             )
             process = self.process
         error = None

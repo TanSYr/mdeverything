@@ -1,0 +1,163 @@
+{
+  "tiny": {
+    "repo": "Systran/faster-whisper-tiny",
+    "revision": "d90ca5fe260221311c53c58e660288d3deb8d356",
+    "bytes": 78203619,
+    "files": [
+      {
+        "name": "config.json",
+        "size": 2249,
+        "sha256": null,
+        "git_sha1": "3baa18e2b321a2f489614607852a729fcd516480"
+      },
+      {
+        "name": "model.bin",
+        "size": 75538270,
+        "sha256": "dcb76c6586fc06cbdac6dd21f14cfd129cc4cdd9dce19bf4ffa62e59cbe6e6d1",
+        "git_sha1": "ee1fa0720a33a1e4a7b698cf5e4aacfcb360b99a"
+      },
+      {
+        "name": "tokenizer.json",
+        "size": 2203239,
+        "sha256": null,
+        "git_sha1": "7818adb6de9fa3064d3ff81226fdd675be1f6344"
+      },
+      {
+        "name": "vocabulary.txt",
+        "size": 459861,
+        "sha256": null,
+        "git_sha1": "c9074644d9d1205686f16d411564729461324b75"
+      }
+    ]
+  },
+  "base": {
+    "repo": "Systran/faster-whisper-base",
+    "revision": "ebe41f70d5b6dfa9166e2c581c45c9c0cfc57b66",
+    "bytes": 147882941,
+    "files": [
+      {
+        "name": "config.json",
+        "size": 2309,
+        "sha256": null,
+        "git_sha1": "867cf1a0fece1394e01d55e287ba2f09a577c046"
+      },
+      {
+        "name": "model.bin",
+        "size": 145217532,
+        "sha256": "d01c3014881c9c6f3133c182f3d2887eb6ca1c789a7538c5c007196857a0a6a9",
+        "git_sha1": "433870823f3f64fd6baaec3f61319124ba5033fd"
+      },
+      {
+        "name": "tokenizer.json",
+        "size": 2203239,
+        "sha256": null,
+        "git_sha1": "7818adb6de9fa3064d3ff81226fdd675be1f6344"
+      },
+      {
+        "name": "vocabulary.txt",
+        "size": 459861,
+        "sha256": null,
+        "git_sha1": "c9074644d9d1205686f16d411564729461324b75"
+      }
+    ]
+  },
+  "small": {
+    "repo": "Systran/faster-whisper-small",
+    "revision": "536b0662742c02347bc0e980a01041f333bce120",
+    "bytes": 486212372,
+    "files": [
+      {
+        "name": "config.json",
+        "size": 2370,
+        "sha256": null,
+        "git_sha1": "e5047537059bd8f182d9ca64c470201585015187"
+      },
+      {
+        "name": "model.bin",
+        "size": 483546902,
+        "sha256": "3e305921506d8872816023e4c273e75d2419fb89b24da97b4fe7bce14170d671",
+        "git_sha1": "504a7fe023f19460564a623887a9f77ea53ac708"
+      },
+      {
+        "name": "tokenizer.json",
+        "size": 2203239,
+        "sha256": null,
+        "git_sha1": "7818adb6de9fa3064d3ff81226fdd675be1f6344"
+      },
+      {
+        "name": "vocabulary.txt",
+        "size": 459861,
+        "sha256": null,
+        "git_sha1": "c9074644d9d1205686f16d411564729461324b75"
+      }
+    ]
+  },
+  "medium": {
+    "repo": "Systran/faster-whisper-medium",
+    "revision": "08e178d48790749d25932bbc082711ddcfdfbc4f",
+    "bytes": 1530571735,
+    "files": [
+      {
+        "name": "config.json",
+        "size": 2257,
+        "sha256": null,
+        "git_sha1": "242aa06a480a7b5509375c645097e87af5136774"
+      },
+      {
+        "name": "model.bin",
+        "size": 1527906378,
+        "sha256": "9b45e1009dcc4ab601eff815b61d80e60ce3fd8c74c1a14f4a282258286b51ae",
+        "git_sha1": "89243526876c43bec8c06b4acd15713e45a79691"
+      },
+      {
+        "name": "tokenizer.json",
+        "size": 2203239,
+        "sha256": null,
+        "git_sha1": "7818adb6de9fa3064d3ff81226fdd675be1f6344"
+      },
+      {
+        "name": "vocabulary.txt",
+        "size": 459861,
+        "sha256": null,
+        "git_sha1": "c9074644d9d1205686f16d411564729461324b75"
+      }
+    ]
+  },
+  "large-v3": {
+    "repo": "Systran/faster-whisper-large-v3",
+    "revision": "edaa852ec7e145841d8ffdb056a99866b5f0a478",
+    "bytes": 3090835702,
+    "files": [
+      {
+        "name": "config.json",
+        "size": 2394,
+        "sha256": null,
+        "git_sha1": "75336feae814999bae6ccccdecf177639ffc6f9d"
+      },
+      {
+        "name": "model.bin",
+        "size": 3087284237,
+        "sha256": "69f74147e3334731bc3a76048724833325d2ec74642fb52620eda87352e3d4f1",
+        "git_sha1": "e91bbba72de41ca3cdc9a656b17aa9407c7e85b6"
+      },
+      {
+        "name": "preprocessor_config.json",
+        "size": 340,
+        "sha256": null,
+        "git_sha1": "931c77a740890c46365c7ae0c9d350ba3cca908f"
+      },
+      {
+        "name": "tokenizer.json",
+        "size": 2480617,
+        "sha256": null,
+        "git_sha1": "3a5e2ba63acdcac9a19ba56cf9bd27f185bfff61"
+      },
+      {
+        "name": "vocabulary.json",
+        "size": 1068114,
+        "sha256": null,
+        "git_sha1": "0adcd01e7c237205d593b707e66dd5d7bc785d2d"
+      }
+    ]
+  }
+}

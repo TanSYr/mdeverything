@@ -5,6 +5,8 @@ const $ = (id) => document.getElementById(id);
 const TERMINAL = new Set(["done", "error", "cancelled"]);
 const messages = {
   en: {
+    modelSetup: "Speech models", modelIntro: "The speech engine is included in the desktop app. Download a model once; then transcribe local recordings offline. Subtitles and the demo need no model.",
+    modelMissing: "Download once, use offline", modelReady: "Ready for offline transcription", modelDownloading: "Downloading", modelVerifying: "Verifying files", modelPaused: "Paused · resume available", modelError: "Download needs attention", modelDownload: "Download", modelResume: "Resume / retry", modelManage: "Manage models", modelAuto: "This model will download automatically when speech recognition is needed.", modelCaption: "Subtitles and demo work immediately.", modelBusy: "Preparing for a conversion. Cancel that job to stop.", engineMissing: "Speech engine unavailable. Reinstall the desktop app, or see the Python installation guide.", modelSize: "download", modelHint: "Tiny: quickest to try · Base: everyday use · Small and above: slower, more memory, often better accuracy.",
     brandTag: "MEDIA → MARKDOWN", newDocument: "New conversion", library: "YOUR LIBRARY", search: "Find a document…",
     localFirst: "Your files. Your machine.", localNote: "Local transcription. Open formats.", settings: "Settings & runtime",
     workspace: "Workspace", newConversion: "Media to Markdown", connecting: "Connecting", online: "Local runtime online", offline: "Runtime unavailable",
@@ -42,6 +44,8 @@ const messages = {
     stageDone: "Document ready", stageCancelled: "Conversion cancelled", stageError: "Conversion failed", close: "Close", removeFile: "Remove file"
   },
   zh: {
+    modelSetup: "语音模型", modelIntro: "桌面版已内置语音引擎。模型只需下载一次，之后本地录音可离线转录。字幕和演示不需要模型。",
+    modelMissing: "下载一次，离线使用", modelReady: "已就绪 · 可离线转录", modelDownloading: "正在下载", modelVerifying: "正在校验文件", modelPaused: "已暂停 · 可继续下载", modelError: "下载需要处理", modelDownload: "下载模型", modelResume: "继续 / 重试", modelManage: "管理模型", modelAuto: "需要语音识别时，将自动下载所选模型。", modelCaption: "字幕和演示可以直接使用。", modelBusy: "转换任务正在准备模型，如需停止请取消该任务。", engineMissing: "语音引擎不可用，请重新安装桌面版，或查看 Python 版安装指南。", modelSize: "下载量", modelHint: "Tiny：快速体验 · Base：日常使用 · Small 及以上：通常更准确，但更慢、占用更多内存。",
     brandTag: "媒体 → MARKDOWN", newDocument: "新建转换", library: "我的文档库", search: "搜索文档…",
     localFirst: "你的文件，你的电脑。", localNote: "本地转录，开放格式。", settings: "设置与运行环境", workspace: "工作区", newConversion: "媒体转 Markdown",
     connecting: "正在连接", online: "本地服务已连接", offline: "本地服务未连接", eyebrow: "让信息，成为你的知识", heroFirst: "少一点观看。", heroSecond: "多一点洞见。",
@@ -76,9 +80,10 @@ function loadPreferences() {
 }
 const preferences = loadPreferences();
 const state = { locale: preferences.locale === "zh" ? "zh" : "en", mode: "url", files: [], jobs: [], selected: null,
-  document: null, documentId: null, raw: false, submitting: false, health: null, connected: false, fetchingJobs: false, readerRequest: 0, jobsRevision: 0 };
+  document: null, documentId: null, raw: false, submitting: false, health: null, models: [], fetchingModels: false, preferencesLoaded: false, preferencesLoading: false, preferenceRevision: 0, modelSignature: "", connected: false, fetchingJobs: false, readerRequest: 0, jobsRevision: 0 };
 const initialEmptyReader = $("reader-content").firstElementChild.cloneNode(true);
 let toastTimer;
+let preferenceWrites = Promise.resolve();
 const t = (key) => messages[state.locale][key] || messages.en[key] || key;
 function element(tag, className, text) {
   const node = document.createElement(tag);
@@ -87,8 +92,13 @@ function element(tag, className, text) {
   return node;
 }
 function savePreferences() {
+  state.preferenceRevision++;
   try { localStorage.setItem("mdeverything.preferences", JSON.stringify({ locale: state.locale, language: $("language").value, model: $("model").value, notes: $("notes").checked })); }
   catch (_) { /* Private browsing may disable persistence. */ }
+  if (state.health?.desktop && state.preferencesLoaded) {
+    const body = JSON.stringify({locale: state.locale, language: $("language").value, model: $("model").value, notes: $("notes").checked});
+    preferenceWrites = preferenceWrites.then(() => api("/api/preferences", {method: "PUT", body})).catch(() => {});
+  }
 }
 function toast(message, error = false) {
   clearTimeout(toastTimer);
@@ -120,11 +130,13 @@ function statusText(job) { return t(job.status === "done" ? "completed" : job.st
 function stageText(job) {
   const chineseStages = {
     "Waiting in queue": "等待处理", "Starting conversion": "开始转换", "Ready to read": "文档已就绪", "Failed": "转换失败", "Cancelled": "转换已取消", "Interrupted": "转换意外中断",
+    "Loading local speech model": "加载本地语音模型", "Waiting for speech model download": "等待语音模型下载",
     "Loading local speech model (first use may download weights)": "加载本地语音模型（首次使用可能需要下载）",
     "Transcribing on your device": "正在本地转录音频", "Reading source and looking for captions": "检查素材与可用字幕",
     "Using existing captions — no speech model needed": "使用已有字幕，无需语音模型", "Downloading audio for local transcription": "下载音频以进行本地转录",
     "Downloading audio": "下载音频", "Reading subtitle file": "读取字幕文件", "Writing notes with your local model": "通过本地模型生成笔记", "Exporting your document": "导出文档"
   };
+  if (state.locale === "zh" && /^(Downloading|Verifying) speech model/.test(job.stage || "")) return job.stage.replace("Downloading speech model", "下载语音模型").replace("Verifying speech model", "校验语音模型");
   if (state.locale === "zh" && chineseStages[job.stage]) return chineseStages[job.stage];
   const key = { queued: "stageQueued", starting: "stageStarting", inspecting: "stageInspecting", downloading: "stageDownloading",
     subtitles: "stageSubtitles", transcribing: "stageTranscribing", notes: "stageNotes", exporting: "stageExporting", done: "stageDone", cancelled: "stageCancelled", error: "stageError" }[job.stage];
@@ -152,7 +164,7 @@ function setLocale(locale) {
   $("locale-toggle").replaceChildren(document.createTextNode(locale === "zh" ? "中 " : "EN "), element("span", "", locale === "zh" ? "/ EN" : "/ 中"));
   $("locale-toggle").setAttribute("aria-label", locale === "zh" ? "Switch to English" : "切换为中文");
   $("settings-close").setAttribute("aria-label", t("close"));
-  renderHealth(); renderLibrary(); renderActiveJob(); renderFiles();
+  renderHealth(); renderModels(true); renderLibrary(); renderActiveJob(); renderFiles();
   if (state.document) renderDocument();
   else renderReaderState();
   if (state.submitting) $("convert-button").firstElementChild.textContent = t("submitting");
@@ -163,7 +175,7 @@ function renderHealth() {
   status.className = `health-status ${state.connected ? "online" : "offline"}`;
   status.replaceChildren(element("i"), element("span", "", t(state.connected ? "online" : "offline")));
   $("version").textContent = state.health?.version ? `v${state.health.version.replace(/^v/, "")}` : "v—";
-  const rows = [["FFmpeg", state.health?.ffmpeg], ["Whisper", state.health?.whisper], ["Ollama", state.health?.ollama]];
+  const rows = [["FFmpeg", state.health?.ffmpeg], ["Whisper engine", state.health?.whisper], ["Ollama", state.health?.ollama]];
   $("runtime-details").replaceChildren(...rows.map(([label, value]) => {
     const row = element("div", "runtime-row");
     row.append(element("span", "", label), element("span", "", state.health ? t(value ? "available" : "unavailable") : t("offline")));
@@ -176,9 +188,30 @@ function renderHealth() {
   }
 }
 async function refreshHealth() {
-  try { state.health = await api("/api/health"); state.connected = true; }
+  try {
+    state.health = await api("/api/health"); state.connected = true;
+    if (state.health.desktop && !state.preferencesLoaded && !state.preferencesLoading) {
+      state.preferencesLoading = true;
+      const revision = state.preferenceRevision;
+      try {
+        const saved = await api("/api/preferences");
+        if (revision === state.preferenceRevision) {
+          if (["en", "zh"].includes(saved.locale)) state.locale = saved.locale;
+          for (const key of ["model", "language"]) if (Array.from($(key).options).some((o) => o.value === saved[key])) $(key).value = saved[key];
+          $("notes").checked = saved.notes === true;
+          setLocale(state.locale);
+          state.preferencesLoaded = true;
+        } else {
+          state.preferencesLoaded = true;
+          savePreferences(); // Preserve an edit made while the initial GET was in flight.
+        }
+      } catch (_) { /* Retry settings initialization on the next health refresh. */ }
+      finally { state.preferencesLoading = false; }
+    }
+  }
   catch (_) { state.connected = false; }
   renderHealth();
+  renderModels();
 }
 function renderLibrary() {
   const query = $("search").value.trim().toLocaleLowerCase();
@@ -455,7 +488,7 @@ $("dropzone").addEventListener("keydown", (event) => { if (event.key === "Enter"
 ["dragenter", "dragover"].forEach((name) => $("dropzone").addEventListener(name, (event) => { event.preventDefault(); $("dropzone").classList.add("dragging"); }));
 ["dragleave", "drop"].forEach((name) => $("dropzone").addEventListener(name, (event) => { event.preventDefault(); $("dropzone").classList.remove("dragging"); }));
 $("dropzone").addEventListener("drop", (event) => { addFiles(event.dataTransfer.files); });
-["language", "model", "notes"].forEach((id) => $(id).addEventListener("change", savePreferences));
+["language", "model", "notes"].forEach((id) => $(id).addEventListener("change", () => { savePreferences(); renderModels(true); }));
 $("read-view").addEventListener("click", () => { state.raw = false; renderDocument(); });
 $("raw-view").addEventListener("click", () => { state.raw = true; renderDocument(); });
 $("copy-button").addEventListener("click", async () => {
@@ -480,7 +513,7 @@ $("new-document").addEventListener("click", () => {
   $("conversion-form").scrollIntoView({ behavior: "smooth", block: "center" });
   if (state.mode === "url") $("urls").focus({ preventScroll: true });
 });
-function openSettings() { if (!$("settings-dialog").open) $("settings-dialog").showModal(); refreshHealth(); }
+function openSettings() { if (!$("settings-dialog").open) $("settings-dialog").showModal(); refreshHealth(); refreshModels(); }
 $("settings-open").addEventListener("click", openSettings);
 $("health-status").addEventListener("click", openSettings);
 $("health-status").setAttribute("role", "button"); $("health-status").tabIndex = 0;
@@ -499,7 +532,66 @@ if (preferences.model && Array.from($("model").options).some((item) => item.valu
 $("notes").checked = preferences.notes === true;
 if (!/Mac|iPhone|iPad/.test(navigator.platform)) { $("shortcut-hint").textContent = "Ctrl Enter"; document.querySelector(".new-button kbd").textContent = "Ctrl ↵"; }
 setMode("url"); setLocale(state.locale);
-refreshHealth(); refreshJobs();
+refreshHealth(); refreshJobs(); refreshModels();
 setInterval(() => { if (!document.hidden) refreshJobs(); }, 2500);
 setInterval(() => { if (!document.hidden) refreshHealth(); }, 30000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) { refreshJobs(); refreshHealth(); } });
+
+
+function modelStatusText(model) {
+  return t({ready: "modelReady", downloading: "modelDownloading", verifying: "modelVerifying", paused: "modelPaused", error: "modelError"}[model.status] || "modelMissing");
+}
+function modelBytes(bytes) { return bytes >= 1024 ** 3 ? `${(bytes / 1024 ** 3).toFixed(2)} GiB` : `${(bytes / 1024 ** 2).toFixed(1)} MiB`; }
+function renderModels(force = false) {
+  const signature = JSON.stringify([state.models, state.locale, state.health?.whisper, $("model").value]);
+  if (!force && state.modelSignature === signature) return;
+  state.modelSignature = signature;
+  const selected = state.models.find((model) => model.name === $("model").value);
+  const banner = $("model-setup-status");
+  banner.replaceChildren();
+  banner.append(element("strong", "", selected ? `${selected.name.toUpperCase()} · ${modelStatusText(selected)}` : t("checking")));
+  banner.append(element("span", "", state.health && !state.health.whisper ? t("engineMissing") : selected?.status === "ready" ? t("modelCaption") : t("modelAuto")));
+  if (selected && ["downloading", "verifying"].includes(selected.status)) {
+    banner.append(element("span", "model-byte-count", `${modelBytes(selected.downloaded_bytes)} / ${modelBytes(selected.total_bytes)}`));
+  }
+  $("model-list").replaceChildren(...state.models.map((model) => {
+    const row = element("div", "model-card"); row.dataset.model = model.name;
+    const header = element("div", "model-card-heading");
+    header.append(element("strong", "", model.name.toUpperCase()), element("span", "", `${modelBytes(model.total_bytes)} ${t("modelSize")}`));
+    const status = element("p", "model-status", modelStatusText(model));
+    row.append(header, status);
+    if (["downloading", "verifying"].includes(model.status)) {
+      const progress = element("progress"); progress.max = model.total_bytes; progress.value = model.downloaded_bytes;
+      progress.setAttribute("aria-label", modelStatusText(model));
+      row.append(progress, element("span", "model-byte-count", `${modelBytes(model.downloaded_bytes)} / ${modelBytes(model.total_bytes)}`));
+      if (!model.can_cancel) row.append(element("small", "", t("modelBusy")));
+    }
+    if (model.error) row.append(element("p", "model-error", model.error));
+    if (model.status !== "ready") {
+      const active = ["downloading", "verifying"].includes(model.status);
+      if (!active || model.can_cancel) {
+        const button = element("button", "model-action", t(active ? "cancel" : ["error", "paused"].includes(model.status) ? "modelResume" : "modelDownload"));
+        button.type = "button"; button.disabled = !state.health?.whisper;
+        button.addEventListener("click", async () => {
+          button.disabled = true;
+          try {
+            const result = await api(`/api/models/${encodeURIComponent(model.name)}/${active ? "cancel" : "download"}`, {method: "POST"});
+            state.models = state.models.map((m) => m.name === model.name ? result : m);
+            renderModels(true);
+          } catch (error) { toast(error.message, true); button.disabled = false; }
+        });
+        row.append(button);
+      }
+    }
+    return row;
+  }));
+}
+async function refreshModels() {
+  if (state.fetchingModels) return;
+  state.fetchingModels = true;
+  try { state.models = (await api("/api/models")).models; renderModels(); }
+  catch (_) { /* Runtime status already reports connection failures. */ }
+  finally { state.fetchingModels = false; }
+}
+$("model-manage").addEventListener("click", () => { openSettings(); });
+setInterval(() => { if (!document.hidden) refreshModels(); }, 2500);

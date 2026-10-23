@@ -4,6 +4,7 @@ import importlib.util
 import json
 import os
 import re
+import secrets
 import shutil
 import tempfile
 from contextlib import asynccontextmanager
@@ -18,6 +19,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from . import __version__
 from .jobs import JobManager
+from .model_downloads import ModelDownloads
 from .pipeline import MEDIA_EXTENSIONS, SUBTITLE_EXTENSIONS, validate_url
 
 PACKAGE = Path(__file__).parent
@@ -37,6 +39,10 @@ class Options(BaseModel):
         return value
 
 
+class Preferences(Options):
+    locale: Literal["en", "zh"] = "en"
+
+
 class Batch(Options):
     urls: list[str] = Field(min_length=1, max_length=20)
 
@@ -49,18 +55,27 @@ class Batch(Options):
 def create_app(data_dir: Path | None = None):
     directory = Path(data_dir or os.environ.get("MDE_DATA_DIR", Path.home() / ".mdeverything"))
     manager = JobManager(directory)
+    model_downloads = ModelDownloads()
+    desktop_token = os.environ.get("MDE_DESKTOP_TOKEN", "")
 
     @asynccontextmanager
     async def lifespan(app):
         manager.start()
-        yield
-        manager.stop()
+        try:
+            yield
+        finally:
+            manager.stop()
+            model_downloads.stop()
 
     app = FastAPI(title="mdeverything", version=__version__, lifespan=lifespan, docs_url=None, redoc_url=None)
     app.state.manager = manager
 
     @app.middleware("http")
     async def local_boundary(request: Request, call_next):
+        if desktop_token and not secrets.compare_digest(
+            request.headers.get("x-mde-token", ""), desktop_token
+        ):
+            return JSONResponse({"detail": "Desktop session required."}, status_code=403)
         allowed = {"localhost", "127.0.0.1", "::1"}
         allowed.update(h.strip() for h in os.environ.get("MDE_ALLOWED_HOSTS", "").split(",") if h.strip())
         if request.url.hostname not in allowed:
@@ -100,11 +115,48 @@ def create_app(data_dir: Path | None = None):
     def health():
         return {
             "version": __version__,
+            "desktop": bool(desktop_token),
             "ffmpeg": shutil.which("ffmpeg") is not None,
             "whisper": importlib.util.find_spec("faster_whisper") is not None,
             "data_dir": str(manager.directory),
             "ollama": shutil.which("ollama") is not None or bool(os.environ.get("MDE_OLLAMA_URL")),
         }
+
+    @app.get("/api/preferences")
+    def preferences():
+        with manager.lock:
+            try:
+                return Preferences.model_validate_json(
+                    (directory / "preferences.json").read_text()
+                ).model_dump()
+            except (OSError, ValueError):
+                return Preferences().model_dump()
+
+    @app.put("/api/preferences")
+    def save_preferences(body: Preferences):
+        with manager.lock:
+            target = directory / "preferences.json"
+            temporary = target.with_suffix(".tmp")
+            temporary.write_text(body.model_dump_json(), encoding="utf-8")
+            temporary.replace(target)
+        return body.model_dump()
+
+    @app.get("/api/models")
+    def models():
+        return {"models": model_downloads.list()}
+
+    @app.post("/api/models/{name}/download")
+    def download_model(name: str):
+        if importlib.util.find_spec("faster_whisper") is None:
+            raise HTTPException(
+                409,
+                "Speech engine is unavailable. Reinstall the desktop app or install the transcribe extra for the Python edition.",
+            )
+        return model_downloads.start(name)
+
+    @app.post("/api/models/{name}/cancel")
+    def cancel_model(name: str):
+        return model_downloads.cancel(name)
 
     @app.get("/api/jobs")
     def jobs():

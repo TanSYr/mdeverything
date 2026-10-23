@@ -1,5 +1,18 @@
 # Installation and troubleshooting
 
+## Desktop installers
+
+Download from the [v0.2.0 desktop preview release](https://github.com/TanSYr/mdeverything/releases/tag/v0.2.0). Select macOS arm64 for Apple Silicon, macOS x64 for Intel, or Windows x64. Linux can use the source or Docker edition. Windows ARM is not a native target in this release.
+
+- **macOS:** open the `.dmg`, drag mdeverything to Applications, then open it. These preview packages are not signed with an Apple Developer ID or notarized. macOS may require approval in **System Settings → Privacy & Security → Open Anyway** after the first launch attempt. Only approve the release you intentionally downloaded and checked. No command to disable Gatekeeper is needed or recommended.
+- **Windows:** run the `.exe` installer. This unsigned preview can trigger SmartScreen's unknown-publisher prompt. Confirm the downloaded file and its checksum before using **More info → Run anyway**, if offered by your system. Managed computers may require administrator approval.
+
+Python, Whisper's inference engine, FFmpeg and Node are included. **Do not install Python or run pip for the desktop edition.** Start with the included demo, which works without downloading a model. In Settings, prepare a speech model or let the first audio conversion prepare it automatically. Model download progress is measured in bytes, cancellation preserves partial downloads, and retry resumes them. Models are checked before being marked ready.
+
+Model setup connects to `huggingface.co` and its CDN. If it fails, check network access, disk space and proxy connectivity, then use Resume / retry. Local recordings stay on your machine. Existing captions and `.srt`/`.vtt` files do not require Whisper weights. Optional AI notes still require a separately installed and running Ollama service.
+
+The library and models persist outside the app: macOS `~/Library/Application Support/mdeverything/`, Windows `%APPDATA%/mdeverything/`. The exact workspace location appears in Settings. Replacing/upgrading the application preserves that directory. Removing the app alone may leave these files; back up documents before manually removing application data. Desktop updates are manual in this preview.
+
 ## Source install
 
 Use Python 3.11–3.13. Create an isolated virtual environment before installing.
@@ -38,7 +51,17 @@ Current yt-dlp uses an external JavaScript runtime for YouTube challenges. Insta
 
 Choose tiny for a fast smoke test, base for a small default, small/medium for better accuracy at greater CPU/memory cost. large-v3 is available but can be slow on a CPU. This release uses CPU/int8, including on Apple Silicon; it does not implement Metal acceleration.
 
-Models first load from the local Hugging Face cache, then download if not cached. First use needs internet access and disk space. `HF_HOME` can move the cache. Model downloads and inference may take several minutes; a loading stage without a percentage change does not mean the app is stuck. Cancel terminates the job worker.
+Models use an application-managed, revision-pinned cache: source edition `~/.mdeverything/models`, desktop edition its application-data `models` subfolder. `MDE_MODEL_DIR` overrides the location for developer runs. Existing Hugging Face caches from v0.1 are not automatically migrated. Model setup uses resumable downloads and verifies each file; interrupted jobs leave partial downloads ready for retry. Once ready, loading a model makes no model-host requests. Cancel terminates the relevant download/job worker.
+
+| Model | Download (rounded) |
+| --- | ---: |
+| Tiny | 75 MiB |
+| Base | 141 MiB |
+| Small | 464 MiB |
+| Medium | 1.43 GiB |
+| Large v3 | 2.88 GiB |
+
+Larger models can require several GiB of working memory and significantly more CPU time. Start with Tiny or Base.
 
 ## Authenticated websites
 
