@@ -1,0 +1,12 @@
+services:
+  mdeverything:
+    build: .
+    ports:
+      - "127.0.0.1:8765:8765"
+    volumes:
+      - mde-data:/data
+      - mde-models:/models
+    restart: unless-stopped
+volumes:
+  mde-data:
+  mde-models:

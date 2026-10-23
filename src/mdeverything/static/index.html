@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f2ed">
+  <meta name="description" content="Turn videos, audio, and subtitles into clean, portable Markdown. A local-first open-source workspace.">
+  <title>mdeverything — From media to meaning.</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%23e45d36'/%3E%3Cpath d='M15 40V24l8 9 8-9v16m9-16v16m-6-6 6 6 6-6' fill='none' stroke='%23fff' stroke-width='5' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/style.css">
+  <script defer src="/static/app.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Library">
+      <a class="brand" href="/" aria-label="mdeverything home"><span class="brand-mark"><svg viewBox="0 0 40 32" fill="none" aria-hidden="true"><path d="M3 25V7l8 10 8-10v18M30 7v18m-6-6 6 6 6-6" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"/></svg></span><span>md<span class="brand-light">everything</span><small data-i18n="brandTag">MEDIA → MARKDOWN</small></span></a>
+      <button id="new-document" class="new-button"><span class="plus">+</span><span data-i18n="newDocument">New conversion</span><kbd>⌘ ↵</kbd></button>
+      <div class="library-heading"><span data-i18n="library">YOUR LIBRARY</span><span id="job-count">0</span></div>
+      <label class="search-box"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg><input id="search" type="search" data-placeholder="search" data-i18n-aria="search" aria-label="Find a document…" placeholder="Find a document…" autocomplete="off"><span>/</span></label>
+      <div id="job-list" class="job-list" aria-live="polite"></div>
+      <div class="sidebar-bottom">
+        <div class="local-note"><span class="local-icon">↳</span><div><strong data-i18n="localFirst">Your files. Your machine.</strong><p data-i18n="localNote">Local transcription. Open formats.</p></div></div>
+        <button id="settings-open" class="settings-button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 3-1 3-3 1 1 3-2 2 2 2-1 3 3 1 1 3h6l1-3 3-1-1-3 2-2-2-2 1-3-3-1-1-3Z"/><circle cx="12" cy="12" r="3"/></svg><span data-i18n="settings">Settings & runtime</span><span>↗</span></button>
+        <div class="sidebar-credit"><span>OPEN SOURCE BY <a href="https://github.com/TanSYr" target="_blank" rel="noopener noreferrer">TanSYr</a></span><span id="version">v—</span></div>
+      </div>
+    </aside>
+    <main>
+      <header class="topbar"><div class="breadcrumb"><span data-i18n="workspace">Workspace</span><span>/</span><strong data-i18n="newConversion">Media to Markdown</strong></div><div class="topbar-actions"><span id="health-status" class="health-status"><i></i><span data-i18n="connecting">Connecting</span></span><button id="locale-toggle" class="locale-toggle" aria-label="Switch to Chinese">EN <span>/ 中</span></button></div></header>
+      <div class="workspace-grid">
+        <section class="converter" aria-labelledby="hero-title">
+          <div class="eyebrow"><span class="tiny-square"></span><span data-i18n="eyebrow">FROM MEDIA TO MEANING</span><span class="edition">01 / WORKSPACE</span></div>
+          <h1 id="hero-title"><span data-i18n="heroFirst">Less watching.</span><br><em data-i18n="heroSecond">More knowing.</em></h1>
+          <p class="hero-description" data-i18n="description">Turn the things you watch and listen to into words you can search, keep, and make your own.</p>
+          <form id="conversion-form">
+            <div class="input-card">
+              <div class="source-tabs" role="tablist" aria-label="Input source"><button type="button" id="url-tab" role="tab" aria-selected="true" aria-controls="url-panel" class="source-tab active"><span>↗</span><span data-i18n="pasteLink">Paste a link</span></button><button type="button" id="file-tab" role="tab" aria-selected="false" aria-controls="file-panel" class="source-tab"><span>↑</span><span data-i18n="uploadFile">Upload a file</span></button></div>
+              <div id="url-panel" role="tabpanel" aria-labelledby="url-tab"><label class="sr-only" for="urls" data-i18n="urlLabel">Media URLs, one per line</label><textarea id="urls" data-placeholder="urlPlaceholder" placeholder="Drop a video or audio link here…&#10;One link per line for a batch." rows="5" spellcheck="false"></textarea><div class="input-foot"><span class="source-types">YouTube <span>·</span> Bilibili <span>·</span> Podcasts <span>·</span> <span data-i18n="andMore">& more</span></span><span class="batch-label" data-i18n="batchReady">BATCH READY</span></div></div>
+              <div id="file-panel" role="tabpanel" aria-labelledby="file-tab" hidden><label id="dropzone" class="dropzone" tabindex="0"><input id="files" type="file" accept="audio/*,video/*,.srt,.vtt,.mp4,.mkv,.mov,.webm,.mp3,.wav,.m4a,.flac,.ogg,.aac" multiple><span class="upload-symbol">↑</span><strong data-i18n="dropFiles">Drop your files here</strong><span data-i18n="browseFiles">or click to browse your device</span><small>MP4, MP3, WAV, SRT, VTT <span data-i18n="andMore">& more</span></small></label><div id="file-selection" class="file-selection"></div></div>
+            </div>
+            <div class="options-row"><label><span data-i18n="sourceLanguage">SOURCE LANGUAGE</span><select id="language"><option value="auto" data-i18n="autoDetect">Auto-detect</option><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option></select></label><label><span data-i18n="transcriptionModel">WHISPER MODEL</span><select id="model"><option value="tiny">Tiny</option><option value="base" selected>Base</option><option value="small">Small</option><option value="medium">Medium</option><option value="large-v3">Large v3</option></select></label></div>
+            <label class="notes-option"><input id="notes" type="checkbox"><span class="toggle-track"></span><span><strong data-i18n="addNotes">Add AI study notes</strong><small data-i18n="notesHint">Optional · requires local Ollama</small></span><span class="optional-badge" data-i18n="optional">OPTIONAL</span></label>
+            <button id="convert-button" class="convert-button" type="submit"><span data-i18n="convert">Make it Markdown</span><span>↗</span></button>
+            <div class="submit-note"><span data-i18n="submitNote">Readable. Searchable. Yours to keep.</span><kbd id="shortcut-hint">⌘ Enter</kbd></div>
+          </form>
+          <div class="demo-row"><span class="demo-icon">✳</span><div><strong data-i18n="justExploring">Just exploring?</strong><span data-i18n="demoDescription">See an original sample transcript.</span></div><button id="demo-button"><span data-i18n="tryDemo">Try demo</span> ↗</button></div>
+          <div id="active-job" class="active-job" hidden aria-live="polite"></div>
+          <footer class="converter-footer"><span>01 <span data-i18n="flowSource">ADD MEDIA</span></span><i></i><span>02 <span data-i18n="flowExtract">EXTRACT WORDS</span></span><i></i><span>03 <span data-i18n="flowKeep">KEEP THE IDEAS</span></span></footer>
+        </section>
+        <section class="reader" aria-labelledby="reader-heading">
+          <div class="reader-toolbar"><div class="reader-title"><span class="document-icon">≡</span><h2 id="reader-heading" data-i18n="document">Document</h2><span class="md-badge">.md</span></div><div id="view-switch" class="view-switch" hidden><button id="read-view" class="active" data-i18n="read">Read</button><button id="raw-view" data-i18n="raw">Raw</button></div></div>
+          <div id="reader-content" class="reader-content"><div class="reader-empty"><div class="paper-art" aria-hidden="true"><span class="paper-corner"></span><span class="paper-kicker">YOUR NEXT GOOD IDEA</span><span class="paper-md">M↓</span><span class="paper-rule wide"></span><span class="paper-rule"></span><span class="paper-rule short"></span><div class="paper-highlight"><span></span><span></span></div><span class="paper-rule"></span><span class="paper-rule short"></span><span class="paper-star">✳</span></div><span class="empty-eyebrow" data-i18n="emptyEyebrow">A LITTLE LESS NOISE.</span><h3 data-i18n="emptyTitle">A place for the good parts.</h3><p data-i18n="emptyDescription">Your media becomes a clean, timestamped document. Ready for your notes, your tools, your next idea.</p><div class="empty-formats"><span>MARKDOWN</span><span>SRT</span><span>JSON</span></div></div></div>
+          <div class="reader-bottom"><span id="reader-status" data-i18n="waitingSource">Waiting for your first source</span><div id="document-actions" class="document-actions" hidden><button id="copy-button" data-i18n="copy">Copy</button><label class="sr-only" for="export-format" data-i18n="exportFormat">Export format</label><select id="export-format"><option value="md">.md</option><option value="srt">.srt</option><option value="json">.json</option></select><button id="download-button"><span data-i18n="download">Download</span> ↓</button></div><span id="empty-export">PLAIN TEXT. ENDLESS POSSIBILITIES.</span></div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <dialog id="settings-dialog"><div class="modal-heading"><div><span class="eyebrow" data-i18n="preferences">PREFERENCES</span><h2 data-i18n="settings">Settings & runtime</h2></div><button id="settings-close" class="icon-button" aria-label="Close">×</button></div><p data-i18n="settingsDescription">Processing runs on this machine. Your selected language, model, and notes preference are saved in this browser.</p><div id="runtime-details" class="runtime-details"></div><div class="settings-information"><strong data-i18n="howItWorks">A few things to know</strong><p data-i18n="runtimeInfo">Existing subtitles are used when available. Audio transcription uses local Whisper; the first run may download model weights. Larger models need more memory and time.</p><p data-i18n="networkInfo">Online sources need a network connection and support varies by site. Optional study notes are generated through your local Ollama service.</p></div><button id="settings-done" class="convert-button" data-i18n="done">Done</button></dialog>
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

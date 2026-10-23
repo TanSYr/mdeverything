@@ -1,0 +1,14 @@
+name: Feature request / 功能建议
+description: Describe the workflow you want to improve.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: Describe a concrete input, desired output and why the current workflow falls short.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Suggested approach

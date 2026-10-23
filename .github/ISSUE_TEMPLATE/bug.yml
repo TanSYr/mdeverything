@@ -1,0 +1,28 @@
+name: Bug report / 问题反馈
+description: Help us reproduce a conversion or installation problem.
+body:
+  - type: textarea
+    id: expected
+    attributes:
+      label: What happened? / 发生了什么？
+      description: Expected behavior and actual behavior. Include a public example URL or minimal subtitle if possible.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce / 复现步骤
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment / 环境
+      description: OS, Python version, mde doctor output, command or UI action. Remove private paths and credentials.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error message / 报错
+      description: Never post cookies, access tokens, private recordings or confidential transcripts.
